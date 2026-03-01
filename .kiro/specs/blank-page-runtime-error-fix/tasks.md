@@ -1,0 +1,84 @@
+# Implementation Plan
+
+- [ ] 1. Write bug condition exploration test
+  - **Property 1: Fault Condition** - JSX Parser Failure on Unclosed Conditional
+  - **CRITICAL**: This test MUST FAIL on unfixed code - failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior - it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate the JSX parsing bug exists
+  - **Scoped PBT Approach**: Scope the property to the concrete failing case - attempting to render AuthChecker component with unclosed conditional block
+  - Test that AuthChecker component renders successfully without JSX parse errors
+  - Test that browser displays the application UI (not blank page)
+  - Test that React DevTools shows complete component tree
+  - Test that browser console has no JSX/React parsing errors
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct - it proves the bug exists)
+  - Document counterexamples found: blank page, console errors, component mount failure
+  - Mark task complete when test is written, run, and failure is documented
+  - _Requirements: 2.1, 2.2, 2.3_
+
+- [ ] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** - Functional Behavior Unchanged
+  - **IMPORTANT**: Follow observation-first methodology
+  - Since the bug prevents the app from loading, we cannot observe unfixed behavior directly
+  - Instead, write tests that verify expected functionality based on requirements and design specs
+  - Write property-based tests for domain check functionality (SPF, DKIM, DMARC analysis)
+  - Write tests for tab navigation (Overview, AI Insights, Findings, Recommendations, DNS)
+  - Write tests for automation mode with email header parsing
+  - Write tests for AI features (risk scoring, insights, threat analysis)
+  - Write tests for chatbot functionality
+  - Write tests for report download feature
+  - Write tests for sample domain quick-select
+  - **NOTE**: These tests will be run AFTER the fix since unfixed code cannot load
+  - **EXPECTED OUTCOME**: Tests PASS after fix (confirms all functionality preserved)
+  - Mark task complete when tests are written
+  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8_
+
+- [ ] 3. Fix for unclosed JSX conditional rendering block
+
+  - [ ] 3.1 Implement the fix
+    - Open `email-security-toolkit/src/AuthChecker.jsx`
+    - Navigate to line 619 (closing `</div>` tag of Risk Score Card)
+    - Add `)}` immediately after the closing `</div>` tag to properly close the conditional block that opens at line 585 with `{riskScore && (`
+    - Verify the conditional rendering block is now properly structured: `{riskScore && ( ... )}`
+    - Save the file
+    - _Bug_Condition: isBugCondition(input) where input.hasConditionalBlock == true AND input.conditionalClosing == MISSING_
+    - _Expected_Behavior: JSX parser successfully parses component, React renders complete component tree without errors, application displays full UI_
+    - _Preservation: All domain check functionality, AI features, tab navigation, automation mode, chatbot, and report downloads continue to work exactly as before_
+    - _Requirements: 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8_
+
+  - [ ] 3.2 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** - JSX Parser Success
+    - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
+    - The test from task 1 encodes the expected behavior
+    - When this test passes, it confirms the expected behavior is satisfied
+    - Start development server with fixed code: `npm start`
+    - Open browser to `http://localhost:3000`
+    - Verify application displays full UI (not blank page)
+    - Verify browser console has no JSX/React errors
+    - Verify React DevTools shows complete AuthChecker component tree
+    - Run bug condition exploration test from step 1
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - _Requirements: 2.1, 2.2, 2.3_
+
+  - [ ] 3.3 Verify preservation tests still pass
+    - **Property 2: Preservation** - Functional Behavior Unchanged
+    - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
+    - Run preservation property tests from step 2
+    - Test domain check functionality: Enter "google.com", click "Run Check", verify SPF/DKIM/DMARC analysis displays
+    - Test tab navigation: Verify all tabs (Overview, AI Insights, Findings, Recommendations, DNS) work correctly
+    - Test automation mode: Click "Automation Mode", paste headers, verify parsing and auto-extraction
+    - Test AI features: Run check, navigate to AI Insights, verify Risk Score Card and insights display
+    - Test chatbot: Click "Ask AI" button, verify modal opens and chatbot responds
+    - Test report download: Navigate to AI Insights, click "Download Full Report", verify file downloads
+    - Test sample domains: Click sample domain chips, verify auto-population and check execution
+    - Test build process: Run `npm run build`, verify successful completion
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Confirm all tests still pass after fix (no regressions)
+
+- [ ] 4. Checkpoint - Ensure all tests pass
+  - Verify bug condition exploration test passes (application loads successfully)
+  - Verify all preservation tests pass (all functionality works as expected)
+  - Verify no console errors in browser
+  - Verify build process completes successfully
+  - Ensure all tests pass, ask the user if questions arise
